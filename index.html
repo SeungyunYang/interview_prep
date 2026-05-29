@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Lab Interview — Amelia Yang</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F5F2EC; --ink: #1A1814; --ink-mid: #5A5750; --ink-light: #9A958E;
+    --accent: #C8440A; --accent-soft: #F5EDE7; --green: #2E6B4A; --green-soft: #E8F2EC;
+    --purple: #4A3A8C; --purple-soft: #EDEAF8; --blue-soft: #E8EFF8; --blue: #2A4A7A;
+    --border: rgba(26,24,20,0.12); --serif: 'DM Serif Display', Georgia, serif; --sans: 'DM Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+  .header { position: sticky; top: 0; z-index: 100; background: var(--ink); color: var(--cream); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 52px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .header-title { font-family: var(--serif); font-size: 17px; letter-spacing: 0.01em; }
+  .header-sub { font-size: 11px; color: rgba(245,242,236,0.45); letter-spacing: 0.06em; text-transform: uppercase; }
+  .progress-bar { position: fixed; top: 52px; left: 0; height: 2px; background: var(--accent); width: 0%; transition: width 0.1s; z-index: 101; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; min-height: calc(100vh - 52px); max-width: 1100px; margin: 0 auto; }
+  .sidebar { position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; padding: 2rem 1.25rem 2rem 1.5rem; border-right: 1px solid var(--border); background: var(--cream); }
+  .nav-section-label { font-size: 9px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin: 1.5rem 0 0.5rem; padding-left: 2px; }
+  .nav-section-label:first-child { margin-top: 0; }
+  .nav-link { display: flex; align-items: flex-start; gap: 8px; padding: 5px 8px; border-radius: 6px; text-decoration: none; color: var(--ink-mid); font-size: 12px; line-height: 1.4; transition: background 0.15s, color 0.15s; margin-bottom: 2px; }
+  .nav-link:hover { background: rgba(26,24,20,0.06); color: var(--ink); }
+  .nav-link.active { background: var(--accent-soft); color: var(--accent); }
+  .nav-num { font-size: 9px; font-weight: 500; background: var(--border); color: var(--ink-light); border-radius: 3px; padding: 1px 5px; flex-shrink: 0; margin-top: 1px; font-variant-numeric: tabular-nums; }
+  .nav-link.active .nav-num { background: rgba(200,68,10,0.15); color: var(--accent); }
+  .main { padding: 2.5rem 2.5rem 6rem; max-width: 720px; }
+  .section { margin-bottom: 3rem; }
+  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+  .section-title { font-family: var(--serif); font-size: 22px; color: var(--ink); font-style: italic; }
+  .section-count { font-size: 11px; color: var(--ink-light); letter-spacing: 0.04em; }
+  .q-card { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
+  .q-card:hover { border-color: rgba(26,24,20,0.22); }
+  .q-card.open { border-color: rgba(26,24,20,0.22); }
+  .q-header { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; cursor: pointer; user-select: none; }
+  .q-num { font-size: 10px; font-weight: 500; border-radius: 4px; padding: 2px 7px; flex-shrink: 0; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tag-intro { background: var(--blue-soft); color: var(--blue); }
+  .tag-gap { background: var(--green-soft); color: var(--green); }
+  .tag-digital { background: var(--purple-soft); color: var(--purple); }
+  .tag-teach { background: #FDF0E6; color: #8A5200; }
+  .tag-vision { background: var(--accent-soft); color: var(--accent); }
+  .tag-close { background: #F0EEE8; color: var(--ink-mid); }
+  .q-text { font-size: 14px; font-weight: 500; color: var(--ink); flex: 1; line-height: 1.5; }
+  .q-chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--ink-light); margin-top: 3px; transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+  .q-card.open .q-chevron { transform: rotate(180deg); }
+  .q-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+  .q-card.open .q-body { display: block; }
+  .answer-content p { font-size: 14px; color: var(--ink); line-height: 1.8; margin-top: 14px; }
+  .edit-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); font-size: 12px; font-weight: 500; border-radius: 6px; padding: 5px 12px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--ink-mid); transition: background 0.15s, color 0.15s, border-color 0.15s; }
+  .btn:hover { background: rgba(26,24,20,0.06); color: var(--ink); border-color: rgba(26,24,20,0.22); }
+  .btn-save { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+  .btn-save:hover { background: #333; border-color: #333; color: var(--cream); }
+  .btn-cancel { color: var(--ink-light); }
+  .answer-editor { display: none; width: 100%; min-height: 160px; margin-top: 14px; padding: 12px 14px; font-family: var(--sans); font-size: 14px; line-height: 1.8; color: var(--ink); background: #FAFAF8; border: 1px solid rgba(26,24,20,0.2); border-radius: 8px; resize: vertical; outline: none; transition: border-color 0.15s; }
+  .answer-editor:focus { border-color: var(--accent); background: white; }
+  .q-card.editing .answer-content { display: none; }
+  .q-card.editing .answer-editor { display: block; }
+  .q-card.editing .btn-edit { display: none; }
+  .q-card.editing .btn-save, .q-card.editing .btn-cancel { display: inline-flex; }
+  .btn-save, .btn-cancel { display: none; }
+  .saved-badge { font-size: 11px; color: var(--green); opacity: 0; transition: opacity 0.3s; font-weight: 500; }
+  .saved-badge.show { opacity: 1; }
+  .nav-num.modified::after { content: '·'; color: var(--accent); margin-left: 1px; font-size: 14px; line-height: 0; vertical-align: -2px; }
+  .note { font-size: 12px; line-height: 1.65; border-radius: 6px; padding: 9px 13px; margin-top: 14px; }
+  .note-green { background: var(--green-soft); color: #1E5034; }
+  .note-purple { background: var(--purple-soft); color: #3A2A7A; }
+  .note-orange { background: var(--accent-soft); color: #8A2800; }
+  .reminders { background: var(--ink); color: var(--cream); border-radius: 14px; padding: 1.5rem 1.75rem; margin-bottom: 2.5rem; }
+  .reminders-title { font-family: var(--serif); font-size: 16px; margin-bottom: 1rem; color: rgba(245,242,236,0.7); font-style: italic; }
+  .reminder-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.07); font-size: 13px; line-height: 1.55; color: rgba(245,242,236,0.85); }
+  .reminder-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .reminder-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 7px; }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } .sidebar { display: none; } .main { padding: 1.5rem 1.25rem 4rem; } }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+<header class="header">
+  <span class="header-title">Design Lab Interview</span>
+  <span class="header-sub">Amelia Yang · ITP Research Residency 2026</span>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="nav-section-label">Quick reference</div>
+    <a class="nav-link" href="#reminders"><span class="nav-num">★</span>Key reminders</a>
+    <div class="nav-section-label">Intro &amp; motivation</div>
+    <a class="nav-link" href="#q1"><span class="nav-num" id="nav-q1">01</span>Tell us about yourself</a>
+    <a class="nav-link" href="#q2"><span class="nav-num" id="nav-q2">02</span>Short &amp; long term goals</a>
+    <div class="nav-section-label">Physical design gap</div>
+    <a class="nav-link" href="#q3"><span class="nav-num" id="nav-q3">03</span>Biggest gap at ITP</a>
+    <a class="nav-link" href="#q4"><span class="nav-num" id="nav-q4">04</span>Informal office hours</a>
+    <a class="nav-link" href="#q5"><span class="nav-num" id="nav-q5">05</span>Physical design process</a>
+    <div class="nav-section-label">Design thinking</div>
+    <a class="nav-link" href="#q6"><span class="nav-num" id="nav-q6">06</span>Design thinking at ITP</a>
+    <a class="nav-link" href="#q7"><span class="nav-num" id="nav-q7">07</span>Your unique contribution</a>
+    <div class="nav-section-label">Digital design</div>
+    <a class="nav-link" href="#q8"><span class="nav-num" id="nav-q8">08</span>Digital background</a>
+    <a class="nav-link" href="#q9"><span class="nav-num" id="nav-q9">09</span>Soft Lab branding</a>
+    <div class="nav-section-label">Teaching</div>
+    <a class="nav-link" href="#q10"><span class="nav-num" id="nav-q10">10</span>Supporting students</a>
+    <a class="nav-link" href="#q11"><span class="nav-num" id="nav-q11">11</span>Workshops you'd run</a>
+    <div class="nav-section-label">Design Lab vision</div>
+    <a class="nav-link" href="#q12"><span class="nav-num" id="nav-q12">12</span>Vision for the Lab</a>
+    <a class="nav-link" href="#q13"><span class="nav-num" id="nav-q13">13</span>Shop website redesign</a>
+    <div class="nav-section-label">Research</div>
+    <a class="nav-link" href="#q14"><span class="nav-num" id="nav-q14">14</span>Research projects</a>
+    <div class="nav-section-label">Closing</div>
+    <a class="nav-link" href="#q15"><span class="nav-num" id="nav-q15">15</span>Anything else?</a>
+    <div class="nav-section-label">Caroline's advice</div>
+    <a class="nav-link" href="#q19"><span class="nav-num" id="nav-q19">19</span>Your design process</a>
+    <a class="nav-link" href="#q20"><span class="nav-num" id="nav-q20">20</span>Design thinking at ITP</a>
+    <a class="nav-link" href="#q21"><span class="nav-num" id="nav-q21">21</span>Vision for the Lab</a>
+    <div class="nav-section-label">Questions for them</div>
+    <a class="nav-link" href="#q16"><span class="nav-num" id="nav-q16">16</span>What do you expect from me?</a>
+    <a class="nav-link" href="#q17"><span class="nav-num" id="nav-q17">17</span>Why Design Lab specifically?</a>
+    <a class="nav-link" href="#q18"><span class="nav-num" id="nav-q18">18</span>More questions to ask</a>
+    <a class="nav-link" href="#closing-note"><span class="nav-num">✦</span>Closing note</a>
+  </nav>
+
+  <main class="main">
+
+    <div class="reminders" id="reminders">
+      <div class="reminders-title">Before you go in — keep these in mind</div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span>Your biggest strength: you can do both digital <em>and</em> physical design. Say it clearly — don't undersell it.</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span>The Instagram → DM → office hours story is your best card. Tell it like a story, not a list.</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span>Phil &amp; Ian help with the technical side. You help with the <em>design</em> side — it's not competing, it's filling a gap they don't cover.</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span>Katherine asked about your Design Lab vision — have two real, specific ideas ready. One physical, one digital/branding.</span></div>
+      <div class="reminder-item"><div class="reminder-dot"></div><span>Haptics is your research. Design thinking is what you bring to the Lab. Lead with design.</span></div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Intro &amp; motivation</h2>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="q-card" id="q1">
+        <div class="q-header" onclick="toggleCard('q1')">
+          <span class="q-num tag-intro">Q01</span>
+          <span class="q-text">Tell us about yourself and why you're applying — specifically to the Design Lab.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I studied design in college, and right after I graduated I worked as a UX designer for about two years. So I already had a pretty solid digital design background when I got to ITP. But being here pushed me to also get good at physical design — thinking about form, materials, how something feels in your hand. Now those two things together are kind of at the center of how I work.</p>
+            <p>The reason I really want to be at the Design Lab is that I've noticed a gap that I think I'm in a good spot to fill. The Lab does great work on the digital side, but there's a real need around physical design that isn't being met. I know this because I started posting my work on Instagram, and I got DMs from over ten ITP students — mostly first-years — all basically saying the same thing: "I want to talk about physical design." They were working on physical computing projects and had no idea how to think about the casing, the form, the material. I started doing informal one-on-ones with them, and it made it really clear — there's a need here that no one is filling. I want to be that person.</p>
+            <div class="note note-green">Start strong, then get to the community story quickly. That's what makes you stand out.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q1">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q1')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q1')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q1')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q2">
+        <div class="q-header" onclick="toggleCard('q2')">
+          <span class="q-num tag-intro">Q02</span>
+          <span class="q-text">What do you hope to get out of this residency, short-term and long-term?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>In the short term, I want to do two things well. First, I want to build out real physical design support at the Design Lab — running workshops, holding office hours, just being someone students can come to when they need help thinking about how to make their project look and feel right, not just how to build it. I've already been doing this on my own, informally, and I want to make it something more official and consistent.</p>
+            <p>Second, I want to work on some design projects that would actually last beyond my residency year — things like Thesis/Capstone Week branding, a proper website for Soft Lab, and fixing up the shop website. These are things I know I can do and would genuinely help the community.</p>
+            <p>Long term, I'm really interested in a path that combines doing design work and teaching. I came from a professional UX background, and this residency is kind of my chance to figure out what it means to be an educator and researcher, not just a practitioner. I want to leave knowing more about what kind of designer and teacher I want to be.</p>
+            <div class="note note-green">Frame it as what you can give, not just what you want to get out of it.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q2">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q2')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q2')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q2')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">The physical design gap</h2>
+        <span class="section-count">3 questions</span>
+      </div>
+
+      <div class="q-card" id="q3">
+        <div class="q-header" onclick="toggleCard('q3')">
+          <span class="q-num tag-gap">Q03</span>
+          <span class="q-text">What do you see as the biggest gap in design support at ITP right now?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Physical design. When students working on physical computing projects need help, they usually go to Phil or Ian in the shop — and that's great for the technical and materials side of things. But there's a step before that that nobody's really covering: the design thinking. Like, how do you figure out the form of an enclosure so it actually says the right thing? What material fits the tone of your project? How do you think about color and texture as part of the experience?</p>
+            <p>That design layer is just kind of missing right now. And I saw this really clearly when I was doing those informal sessions with students. They weren't asking "how do I use the laser cutter" — they were asking "how do I make this thing feel right." That's a design question. Phil and Ian are amazing but that's not really their territory — and that's exactly where I can step in.</p>
+            <div class="note note-orange">Make it clear you're adding to what Phil and Ian do, not criticizing them. It's about filling a gap, not replacing anyone.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q3">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q3')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q3')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q3')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q4">
+        <div class="q-header" onclick="toggleCard('q4')">
+          <span class="q-num tag-gap">Q04</span>
+          <span class="q-text">You mentioned running informal office hours around physical design. Tell us more about that.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>It kind of happened on its own. I started posting my work on Instagram — stuff that mixed digital and physical design — and I started getting DMs from ITP students, mostly first-years. They'd seen my work and wanted to talk through their own projects. And the thing that kept coming up over and over was physical design: how to think about the form, the casing, the materials for their physical computing work.</p>
+            <p>I ended up doing one-on-ones with more than ten people. I'd look at what they were building, ask questions about what the object needed to say, and help them think through the form, what material made sense, and how the physical design could actually support the interaction they were going for.</p>
+            <p>What really hit me was how much it helped, and how obvious it was that this was something no one else was offering. That's when I realized — this isn't just something I could do. It's something people here are actively looking for.</p>
+            <div class="note note-purple">This is your strongest story. Tell it naturally — Instagram, DMs, sessions, the realization. Don't make it sound like a resume bullet.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q4">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q4')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q4')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q4')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q5">
+        <div class="q-header" onclick="toggleCard('q5')">
+          <span class="q-num tag-gap">Q05</span>
+          <span class="q-text">How do you actually help a student think through physical design? Walk us through your process.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I always start with intent — before anything else. What should this object feel like when you pick it up? What does it need to communicate before you even touch it? A project about something intimate and a project about something precise should feel really different from each other, and that difference should be a choice, not something that just happened.</p>
+            <p>From there I work through the form — the shape, the proportions, whether it should feel soft or sharp. Then the material: not just "what can I make this out of" but "what does this material actually say." Matte versus glossy, warm versus cold, stiff versus flexible — all of that carries meaning. Then color comes in.</p>
+            <p>The nice thing about having worked in the shop is that I can take all of that design thinking and connect it directly to what's actually possible to build. I know what machines work for what shapes, what materials behave like what, and I can sit with a student and help them go all the way from "here's what I want it to feel like" to actually making it. That's the full loop, and I can close it.</p>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q5">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q5')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q5')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q5')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Design thinking</h2>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="q-card" id="q6">
+        <div class="q-header" onclick="toggleCard('q6')">
+          <span class="q-num tag-vision">Q06</span>
+          <span class="q-text">How do you think about design in the context of ITP projects? What does design thinking mean to you here?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>At ITP, design has to work across both digital and physical — and honestly, that's what makes it so interesting here. Most design programs only teach one or the other. But ITP students are building things that live in both worlds at once: a project might have a screen, a physical enclosure, and some kind of tactile feedback, and all three need to feel like they belong together.</p>
+            <p>For me, design thinking at ITP starts with one question: what should this make someone feel? Before they even touch it — what does it communicate? That question works the same whether you're designing a UI or a physical form. A project about closeness should feel different from a project about control — in the materials, the shapes, the surface, the color — and those should all be real decisions, not just accidents.</p>
+            <p>What I see a lot is students with really great concepts who then kind of underdesign the physical side. The idea is there, but the object doesn't quite carry it yet. That gap is where I want to work — helping people translate what they mean into something you can actually see and touch.</p>
+            <div class="note note-green">Caroline said to talk about your design process and how you think about interactions. If it feels natural, bring in a real example from your office hours sessions.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q6">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q6')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q6')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q6')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q7">
+        <div class="q-header" onclick="toggleCard('q7')">
+          <span class="q-num tag-vision">Q07</span>
+          <span class="q-text">What makes you different from other applicants? What do you bring that's unique?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Most people at ITP are strong in either digital or physical — but not really both. I can do both, and more importantly, I know how to move between them. I have a real professional background in UX and visual design, but I also work in the fabrication shop and know materials, how things get built, what's actually possible with the tools on the floor.</p>
+            <p>So when I'm working with a student, I can help them design an interface and also help them figure out how the physical enclosure should be built — and how the two should work together. Being able to think through that whole thing from one end to the other — that's not very common, and that's what I bring.</p>
+            <div class="note note-purple">Say this directly. Don't soften it. This is your main thing — own it.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q7">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q7')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q7')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q7')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Digital design &amp; tools</h2>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="q-card" id="q8">
+        <div class="q-header" onclick="toggleCard('q8')">
+          <span class="q-num tag-digital">Q08</span>
+          <span class="q-text">Tell us about your digital design background.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Design was my college major, and after graduating I worked as a UX designer for close to two years. So I have real work experience — user research, wireframes, prototyping, building out final UI. Figma is the tool I use for basically everything and I know it really well. I also use Illustrator and Photoshop regularly.</p>
+            <p>I've already run two small Figma workshops here at ITP. I'd want to keep doing that as a resident and expand it. People here want to learn design tools, and I can teach them in a way that's actually connected to how you think, not just how to click around the interface.</p>
+            <p>So digital design is definitely not a weak spot for me. What makes my profile a bit different is that I have that background and also real physical design skills. Most people have one or the other.</p>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q8">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q8')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q8')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q8')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q9">
+        <div class="q-header" onclick="toggleCard('q9')">
+          <span class="q-num tag-digital">Q09</span>
+          <span class="q-text">Tell us about the Soft Lab branding project.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Soft Lab didn't have any branding at all — no real visual identity, nothing consistent across the materials they put out. I noticed it and just started talking to the SAO about it. We figured out together what Soft Lab is and what it should feel like, and I built out a full brand identity from that: logo, color palette, a design system that ties it all together.</p>
+            <p>Now the SAO uses that logo and palette across everything related to Soft Lab. It's become the look of the program. That was really satisfying to see — having a clear identity makes a community feel more real and more welcoming.</p>
+            <p>If I become a resident, I'd want to do the same thing for Thesis/Capstone Week, and also build an actual website for Soft Lab. Right now there's nothing online that matches the identity we created, and I'd really love to close that gap.</p>
+            <div class="note note-green">Don't just say what you made — explain why. Show that you think about branding as a way to communicate something, not just make things look nice.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q9">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q9')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q9')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q9')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Teaching &amp; workshops</h2>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="q-card" id="q10">
+        <div class="q-header" onclick="toggleCard('q10')">
+          <span class="q-num tag-teach">Q10</span>
+          <span class="q-text">How would you support first-year students and undergraduates?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>The thing I see most with first-years is that they have a really clear idea of what they want to make, but they get stuck on how to actually make it physical. I try to meet them right there — asking things like: what should this feel like when you hold it? What material gets that across? How can the way it works reinforce what it's trying to say?</p>
+            <p>For undergrads, the main thing is usually confidence. I focus on getting something built fast — even rough — so they can hold it, see it, get some feedback, and go back. That back-and-forth is what actually builds confidence, way more than planning everything out first. I try not to push my own answers on anyone — I want them to find their own way there.</p>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q10">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q10')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q10')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q10')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q11">
+        <div class="q-header" onclick="toggleCard('q11')">
+          <span class="q-num tag-teach">Q11</span>
+          <span class="q-text">What workshops would you want to run as a resident?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Two main tracks. The first is physical design workshops — sessions where we actually work through form, materials, color, texture as design decisions. These would be for students who have a solid concept but don't know how to give it a physical shape. I'd structure them so that you walk in with an idea and walk out with something you can hold. That kind of quick, tangible result is really useful.</p>
+            <p>The second track is design tools — mainly Figma, but also Illustrator. I've already done this twice at ITP in small groups. The key is teaching it so it connects to how you actually think about design, not just how to use the software.</p>
+            <p>What I'd really love to build eventually is a workshop that bridges both — you start with a concept, design it digitally in Figma, and then make a physical version by the end. Something like: idea → Figma → fabricated form, all in one session. That kind of workshop doesn't really exist here yet and I think it would be really valuable.</p>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q11">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q11')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q11')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q11')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Design Lab vision</h2>
+        <span class="section-count">2 questions</span>
+      </div>
+
+      <div class="q-card" id="q12">
+        <div class="q-header" onclick="toggleCard('q12')">
+          <span class="q-num tag-vision">Q12</span>
+          <span class="q-text">What is your vision for the Design Lab? How do you want to bring design more into the ITP community?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I'd love for the Design Lab to become the place where both digital and physical design really live together — because that's actually how people work at ITP. The Lab already does a lot of great stuff on the digital side. But students who are making physical things don't really have a design resource that gets their world. They go to the shop for help building things, but the design thinking part — how to shape something, pick the right material, make it communicate what it's supposed to — that's not really covered anywhere.</p>
+            <p>I want to change that. I'd be in the Lab as someone who can work across both sides: running physical design workshops, holding office hours for students figuring out forms and enclosures, and just being there for anyone whose project is somewhere between digital and physical. On the digital side, I'd keep building on what's already there — more Figma workshops, visual design support, and some bigger community projects like Thesis Week branding or the Soft Lab website.</p>
+            <p>The big picture is a Lab that connects the two sides of ITP that already exist. Digital and physical don't have to feel like totally separate worlds here. The Design Lab can be the place that holds them together.</p>
+            <div class="note note-orange">Katherine asked about this specifically. Come in with two real ideas — one physical, one digital/branding. Be specific, not vague.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q12">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q12')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q12')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q12')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q13">
+        <div class="q-header" onclick="toggleCard('q13')">
+          <span class="q-num tag-vision">Q13</span>
+          <span class="q-text">You mentioned wanting to redesign the shop website. Tell us about that.</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>When I was working in the shop I used the website all the time, and I started noticing how many problems it had. Some of the information is just wrong or out of date. Tools and machines that exist in the shop aren't even listed. The whole structure makes it hard to find what you actually need. After a while, students stopped trusting it and would just come ask in person instead — which tells you a lot.</p>
+            <p>On top of that, the site isn't very easy to navigate, especially if you're new. And those are exactly the people who need it most.</p>
+            <p>If I get to be a resident, I really want to take this on as a proper project — go through all the content, work with the shop staff to get the info right, and redesign the whole thing so it's actually clear and easy to use. It's a project where my UX background and my shop experience both come in at the same time, which doesn't happen that often.</p>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q13">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q13')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q13')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q13')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 7 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Research</h2>
+        <span class="section-count">1 question</span>
+      </div>
+
+      <div class="q-card" id="q14">
+        <div class="q-header" onclick="toggleCard('q14')">
+          <span class="q-num tag-digital">Q14</span>
+          <span class="q-text">What research projects are you most excited to contribute to?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>The Poetic Interaction Library keeps coming to mind. The whole idea — finding, studying, and making examples of interactions that feel poetic — is really a design research question at its core. What makes something feel poetic to interact with? What are the qualities that create that feeling? That's exactly the kind of question I love thinking about, and it connects directly to how I think about physical design: not just "does it work" but "what does it feel like, and why."</p>
+            <p>Material Kitchen is the other one. Materials are such a central part of how I think about physical design — picking a material isn't a technical choice, it's a design choice. A project that actually researches materials that way is one I'd want to be part of.</p>
+            <p>I'm also drawn to Critical Experiences because it's about teaching and learning, and that's something I'm actively trying to grow in. How do you design something that actually changes how someone thinks? That's a design question just as much as it's an education question.</p>
+            <div class="note note-green">Connect each project to a design question, not just "I think this is interesting." Show them you'd bring a design way of thinking to the work.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q14">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q14')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q14')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q14')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Closing</h2>
+        <span class="section-count">1 question</span>
+      </div>
+
+      <div class="q-card" id="q15">
+        <div class="q-header" onclick="toggleCard('q15')">
+          <span class="q-num tag-close">Q15</span>
+          <span class="q-text">Is there anything else you'd like us to know?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I just want to be honest about why I care about this. The thing that made me really want this role wasn't writing my application — it was those ten-plus conversations with students who came to me about physical design because there was nowhere else to go. That gap is real, and I've seen it up close. I know I can help with it, and I really want to.</p>
+            <p>And — I really do believe that being able to work across digital and physical design is exactly what ITP is about. People here make things that live in both worlds. The Design Lab should support that. I'd want to spend this year making that real.</p>
+            <div class="note note-green">Keep it short and genuine. This is the landing — don't add new stuff, just let it land.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q15">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q15')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q15')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q15')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9: Caroline's advice -->
+    <section class="section">
+      <div class="section-header" style="border-bottom-color: #D4A8C7;">
+        <h2 class="section-title">Caroline's advice</h2>
+        <span class="section-count" style="background:#F9EEF6; color:#7A2D6A; font-size:11px; padding:2px 8px; border-radius:4px; letter-spacing:0.04em;">from current resident</span>
+      </div>
+      <div style="background:#F9EEF6; border-radius:10px; padding:11px 15px; margin-bottom:14px; font-size:12.5px; color:#5A1F52; line-height:1.6;">
+        현 레지던트 Caroline이 직접 알려준 포인트들이야. 이 세 가지는 실제 인터뷰에서 나왔거나 나올 가능성이 높은 질문들이니 특히 잘 준비해.
+      </div>
+
+      <div class="q-card" id="q19">
+        <div class="q-header" onclick="toggleCard('q19')">
+          <span class="q-num" style="background:#F9EEF6; color:#7A2D6A;">C01</span>
+          <span class="q-text">Talk about your design process — how do you think about interactions with your pieces?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>My process always starts before I touch any tool. The first thing I ask is — what kind of feeling should this create? What should someone feel the second they see it, before they even do anything? That question is what drives everything else.</p>
+            <p>For physical pieces especially, I think about interaction like a conversation between the object and the person. What does the shape invite? What does the material suggest? When you reach for something with soft edges and a matte surface, you already have an idea of how it's going to feel — and I want that expectation to be intentional. I try to design the moment before the interaction, not just the interaction itself.</p>
+            <p>A concrete example from my haptic work: I don't start by thinking about vibration patterns. I start with the emotion — something like "a quiet kind of reassurance" — and work backward from there into the physical details: the rhythm, how strong it is, how long it lasts, the pauses in between. The whole process is about turning a feeling into a set of real decisions. And that's true whether I'm working on a UI, a physical object, or a haptic system.</p>
+            <div class="note note-purple">Caroline flagged this one specifically. Use a real example from your work — the haptic library is perfect for this.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q19">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q19')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q19')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q19')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q20">
+        <div class="q-header" onclick="toggleCard('q20')">
+          <span class="q-num" style="background:#F9EEF6; color:#7A2D6A;">C02</span>
+          <span class="q-text">What's the importance of design thinking in ITP projects, and how would you bring that to the community as a resident?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>ITP projects are special because they sit at the intersection of concept, interaction, and physical form — and all three have to work together. Design thinking is basically the thing that holds all of that together. It's the habit of always asking "what does this need to communicate?" — not just at the end when you're trying to polish something, but all the way through.</p>
+            <p>What I see most often is students who have a genuinely strong concept but then kind of underdesign the execution. The idea is solid, but the object or the interface doesn't quite carry it yet. Design thinking is what gives you the tools to close that gap — to turn what you mean into something you can actually see and touch and use.</p>
+            <p>As a resident, I'd bring this in two ways. First, just being there — being the person students come to when they're stuck between having an idea and figuring out how to give it form. Asking the design questions that help them find their own answers. Second, through workshops that make design thinking something you can actually learn and practice — physical design sessions where we work through form, material, and color as real decisions, not just visual choices. I want it to feel like a natural part of how everyone works here, not some extra thing.</p>
+            <div class="note note-green">Lead with the specific problem you've actually seen, then show how you'd respond to it. Keep it grounded.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q20">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q20')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q20')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q20')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q21">
+        <div class="q-header" onclick="toggleCard('q21')">
+          <span class="q-num" style="background:#F9EEF6; color:#7A2D6A;">C03</span>
+          <span class="q-text">Katherine wants to know: what is your vision for the Design Lab, and how do you want to bring design into the ITP community?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I'd love for the Design Lab to become the place where digital and physical design actually live together — because that's how ITP really works. The Lab is doing great things on the digital side already, but students who are making physical objects don't really have a design resource that speaks to what they need. They go to the shop for help building, but the design layer before that — figuring out the form, picking materials, making the object say what it's supposed to say — that's kind of just not there right now.</p>
+            <p>I want to change that by actually being in the Lab as someone who works across both. That means physical design workshops where you go from concept to prototype in one session; open office hours for anyone figuring out forms or enclosures; and community projects that give ITP programs a real visual identity — Thesis/Capstone Week branding, the Soft Lab website, fixing the shop website.</p>
+            <p>The bigger picture is a Lab that connects the two sides of ITP that already exist. The shop and the Design Lab shouldn't feel like different worlds. I want to be the link between them — bringing design thinking into fabrication, and bringing physical awareness into digital work.</p>
+            <div class="note note-orange">Katherine asked this directly. Walk in with two specific things you'd actually build — one physical design thing, one digital/branding thing. Be concrete.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit your answer here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q21">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q21')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q21')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q21')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 10: Questions for them -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Questions for them</h2>
+        <span class="section-count">3 questions</span>
+      </div>
+
+      <div class="q-card" id="q16">
+        <div class="q-header" onclick="toggleCard('q16')">
+          <span class="q-num tag-vision">Q16</span>
+          <span class="q-text">What does the Design Lab expect from a resident? What would a good year look like from your side?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I'd really love to know what success looks like from your end at the close of the year. Are there specific things you're hoping a resident leaves behind — whether that's workshops, projects, or even just a shift in how the Lab feels? And on a more practical level, how do you usually think about the balance between a resident's own research and the work they do for the Lab and the community? I want to go in with the right expectations on both sides.</p>
+            <div class="note note-green">Asking this shows you're thinking seriously about fit and real accountability — not just what you want, but what they actually need.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit this question here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q16">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q16')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q16')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q16')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q17">
+        <div class="q-header" onclick="toggleCard('q17')">
+          <span class="q-num tag-vision">Q17</span>
+          <span class="q-text">I also applied for the Fabrication and Physical Computing tracks — what made you invite me to interview specifically with the Design Lab?</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>I'm genuinely curious — since I applied to a few different tracks, I'd love to know what stood out to you from a Design Lab angle. Was it something around physical design, the Soft Lab branding, the office hours I mentioned? Knowing what clicked for you helps me understand what the Lab is looking for right now.</p>
+            <div class="note note-purple">This is one of the most strategic questions you can ask — their answer will tell you exactly what they care about most. You can use it to lean in for the rest of the conversation.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit this question here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q17">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q17')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q17')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q17')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q18">
+        <div class="q-header" onclick="toggleCard('q18')">
+          <span class="q-num tag-vision">Q18</span>
+          <span class="q-text">Other questions to consider asking</span>
+          <svg class="q-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div class="q-body">
+          <div class="answer-content">
+            <p>Is there anything about where the Design Lab is headed this year that isn't really out there publicly — stuff I should know going in?</p>
+            <p>Who would I be working with day-to-day? Is there a sense of how the Lab operates as a team?</p>
+            <p>What's something you wish past residents had done more of, or differently?</p>
+            <div class="note note-green">Pick one or two of these at most. Don't ask all of them — just pick whatever feels right based on how the conversation went.</div>
+          </div>
+          <textarea class="answer-editor" placeholder="Edit these questions here..."></textarea>
+          <div class="edit-toolbar">
+            <span class="saved-badge" id="saved-q18">Saved ✓</span>
+            <button class="btn btn-cancel" onclick="cancelEdit('q18')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit('q18')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+            <button class="btn btn-edit" onclick="startEdit('q18')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing note -->
+    <section class="section" id="closing-note">
+      <div class="section-header">
+        <h2 class="section-title">Closing note</h2>
+      </div>
+      <div style="background:var(--ink);color:var(--cream);border-radius:14px;padding:1.75rem 2rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-30px;right:-20px;font-size:120px;opacity:0.04;font-family:var(--serif);line-height:1;pointer-events:none;">❝</div>
+        <div id="closing-content">
+          <p style="font-family:var(--serif);font-size:18px;font-style:italic;color:rgba(245,242,236,0.9);line-height:1.7;margin-bottom:1rem;">Thank you so much for taking the time to meet with me today.</p>
+          <p style="font-size:14px;color:rgba(245,242,236,0.75);line-height:1.8;">ITP has genuinely changed how I think and how I make things — and I really mean that. I've spent more time on this floor than almost anyone I know, not because I had to, but because I just kept wanting to come back. The people here, the energy, the way everyone takes their ideas seriously and actually builds them into real things — I've never been anywhere like it.</p>
+          <p style="font-size:14px;color:rgba(245,242,236,0.75);line-height:1.8;margin-top:0.75rem;">This residency would mean a lot to me — not as something to put on a resume, but as a real chance to give something back to a place that's given me so much. I'd put everything I have into this role, every single day.</p>
+          <p style="font-size:14px;color:rgba(245,242,236,0.75);line-height:1.8;margin-top:0.75rem;">Thank you again — I really hope I get to be a part of this community in a deeper way.</p>
+        </div>
+        <textarea id="closing-editor" style="display:none;width:100%;min-height:180px;margin-top:1rem;padding:12px 14px;font-family:var(--sans);font-size:14px;line-height:1.8;color:var(--ink);background:#FAFAF8;border:1px solid rgba(26,24,20,0.2);border-radius:8px;resize:vertical;outline:none;" placeholder="Edit closing note here..."></textarea>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:1.25rem;">
+          <span id="saved-closing" style="font-size:11px;color:#9FE1CB;opacity:0;transition:opacity 0.3s;font-weight:500;">Saved ✓</span>
+          <button id="closing-cancel-btn" class="btn" style="display:none;color:rgba(245,242,236,0.5);border-color:rgba(245,242,236,0.15);" onclick="cancelClosing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px;"><path d="M4 4l8 8M12 4l-8 8"/></svg>Cancel</button>
+          <button id="closing-save-btn" class="btn" style="display:none;background:rgba(245,242,236,0.15);border-color:rgba(245,242,236,0.2);color:var(--cream);" onclick="saveClosing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px;"><path d="M3 8l3.5 3.5L13 4.5"/></svg>Save</button>
+          <button id="closing-edit-btn" class="btn" style="color:rgba(245,242,236,0.6);border-color:rgba(245,242,236,0.15);" onclick="editClosing()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px;"><path d="M11 2.5l2.5 2.5-7.5 7.5H3.5V10L11 2.5z"/></svg>Edit</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const STORE_KEY = 'itp_interview_answers';
+  function loadAll() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}'); } catch { return {}; } }
+  function saveAll(data) { localStorage.setItem(STORE_KEY, JSON.stringify(data)); }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = loadAll();
+    Object.entries(saved).forEach(([id, text]) => {
+      if (id === 'closing') return;
+      const card = document.getElementById(id);
+      if (!card || !text) return;
+      const content = card.querySelector('.answer-content');
+      const editor = card.querySelector('.answer-editor');
+      content.innerHTML = text;
+      editor.value = getPlainText(content);
+      const navNum = document.getElementById('nav-' + id);
+      if (navNum) navNum.classList.add('modified');
+    });
+    if (saved['closing']) document.getElementById('closing-content').innerHTML = saved['closing'];
+  });
+
+  function toggleCard(id) {
+    const card = document.getElementById(id);
+    if (card.classList.contains('editing')) return;
+    card.classList.toggle('open');
+  }
+
+  function startEdit(id) {
+    const card = document.getElementById(id);
+    const content = card.querySelector('.answer-content');
+    const editor = card.querySelector('.answer-editor');
+    editor.value = getPlainText(content);
+    card.classList.add('editing', 'open');
+    editor.focus();
+    editor.style.height = 'auto';
+    editor.style.height = editor.scrollHeight + 'px';
+    editor.addEventListener('input', () => { editor.style.height = 'auto'; editor.style.height = editor.scrollHeight + 'px'; });
+  }
+
+  function saveEdit(id) {
+    const card = document.getElementById(id);
+    const content = card.querySelector('.answer-content');
+    const editor = card.querySelector('.answer-editor');
+    const badge = document.getElementById('saved-' + id);
+    const paragraphs = editor.value.split(/\n\n+/).map(p => p.trim()).filter(Boolean).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+    const notes = Array.from(content.querySelectorAll('.note')).map(n => n.outerHTML).join('');
+    content.innerHTML = paragraphs + notes;
+    const all = loadAll(); all[id] = content.innerHTML; saveAll(all);
+    const navNum = document.getElementById('nav-' + id);
+    if (navNum) navNum.classList.add('modified');
+    card.classList.remove('editing');
+    badge.classList.add('show');
+    setTimeout(() => badge.classList.remove('show'), 2000);
+  }
+
+  function cancelEdit(id) { document.getElementById(id).classList.remove('editing'); }
+
+  function getPlainText(el) { return Array.from(el.querySelectorAll('p')).map(p => p.innerText).join('\n\n'); }
+
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    document.getElementById('progress').style.width = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight) * 100) + '%';
+  });
+
+  function editClosing() {
+    const content = document.getElementById('closing-content');
+    const editor = document.getElementById('closing-editor');
+    editor.value = Array.from(content.querySelectorAll('p')).map(p => p.innerText).join('\n\n');
+    content.style.display = 'none'; editor.style.display = 'block';
+    document.getElementById('closing-edit-btn').style.display = 'none';
+    document.getElementById('closing-save-btn').style.display = 'inline-flex';
+    document.getElementById('closing-cancel-btn').style.display = 'inline-flex';
+    editor.focus(); editor.style.height = 'auto'; editor.style.height = editor.scrollHeight + 'px';
+    editor.addEventListener('input', () => { editor.style.height = 'auto'; editor.style.height = editor.scrollHeight + 'px'; });
+  }
+
+  function saveClosing() {
+    const content = document.getElementById('closing-content');
+    const editor = document.getElementById('closing-editor');
+    const badge = document.getElementById('saved-closing');
+    const paragraphs = editor.value.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+      .map((p, i) => { const style = i === 0 ? 'font-family:var(--serif);font-size:18px;font-style:italic;color:rgba(245,242,236,0.9);line-height:1.7;margin-bottom:1rem;' : 'font-size:14px;color:rgba(245,242,236,0.75);line-height:1.8;margin-top:0.75rem;'; return `<p style="${style}">${p.replace(/\n/g,'<br>')}</p>`; }).join('');
+    content.innerHTML = paragraphs; content.style.display = 'block'; editor.style.display = 'none';
+    document.getElementById('closing-edit-btn').style.display = 'inline-flex';
+    document.getElementById('closing-save-btn').style.display = 'none';
+    document.getElementById('closing-cancel-btn').style.display = 'none';
+    const all = loadAll(); all['closing'] = content.innerHTML; saveAll(all);
+    badge.classList.add('show'); setTimeout(() => badge.classList.remove('show'), 2000);
+  }
+
+  function cancelClosing() {
+    document.getElementById('closing-content').style.display = 'block';
+    document.getElementById('closing-editor').style.display = 'none';
+    document.getElementById('closing-edit-btn').style.display = 'inline-flex';
+    document.getElementById('closing-save-btn').style.display = 'none';
+    document.getElementById('closing-cancel-btn').style.display = 'none';
+  }
+
+  const allCards = document.querySelectorAll('.q-card[id], #reminders, #closing-note');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  allCards.forEach(c => observer.observe(c));
+</script>
+</body>
+</html>
